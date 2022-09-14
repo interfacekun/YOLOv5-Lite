@@ -141,8 +141,9 @@ static void generate_proposals(const ncnn::Mat &anchors, int stride, const ncnn:
                                const ncnn::Mat &feat_blob, float prob_threshold,
                                std::vector <Object> &objects) {
     const int num_grid = feat_blob.h;
+    float unsig_pro;
     if (prob_threshold > 0.6)
-        float unsig_pro = unsigmoid(prob_threshold);
+        unsig_pro = unsigmoid(prob_threshold);
 
     int num_grid_x;
     int num_grid_y;
@@ -264,7 +265,7 @@ static int detect_yolov5(const cv::Mat& bgr, std::vector<Object>& objects)
 #if USE_INT8
     yolov5.opt.use_int8_inference=true;
 #else
-    yolov5.opt.use_vulkan_compute = true;
+    yolov5.opt.use_vulkan_compute = false;
     yolov5.opt.use_bf16_storage = true;
 #endif
 
@@ -272,12 +273,16 @@ static int detect_yolov5(const cv::Mat& bgr, std::vector<Object>& objects)
     // the ncnn model https://github.com/nihui/ncnn-assets/tree/master/models
 
 #if USE_INT8
-    yolov5.load_param("v5lite-i8e.param");
-    yolov5.load_model("yolov5-i8e.bin");
+    yolov5.load_param("../model_zoo/v5lite-i8e.param");
+    yolov5.load_model("../model_zoo/yolov5-i8e.bin");
 #else
-    yolov5.load_param("v5lite-e.param");
-    yolov5.load_model("v5lite-e.bin");
+    yolov5.load_param("../model_zoo/v5lite-e.param");
+    yolov5.load_model("../model_zoo/yolov5-e.bin");
 #endif
+
+    struct timespec begin, end;
+    long time;
+    clock_gettime(CLOCK_MONOTONIC, &begin);
 
     const int target_size = 320;
     const float prob_threshold = 0.60f;
@@ -408,6 +413,9 @@ static int detect_yolov5(const cv::Mat& bgr, std::vector<Object>& objects)
         objects[i].rect.height = y1 - y0;
     }
 
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    time = (end.tv_sec - begin.tv_sec) + (end.tv_nsec - begin.tv_nsec);
+    printf(">> detect Time : %lf ms\n", (double)time/1000000);
     return 0;
 }
 
