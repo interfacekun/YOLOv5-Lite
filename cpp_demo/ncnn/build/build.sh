@@ -1,3 +1,3 @@
 #!/bin/bash
-#cmake ..
-make -j3
+cmake ..
+make -j4

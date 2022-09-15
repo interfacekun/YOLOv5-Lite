@@ -6,9 +6,10 @@ cmake_minimum_required(VERSION 3.10.2)
 
 #INCLUDE_DIRECTORIES(/root/git/ncnn-tensorflow/build/install/include)
 #find_library(NCNN_LIB libncnn.a /root/git/ncnn-tensorflow/build/install/lib)
-
+set(NCNN_PROJ /Volumes/outDisk/git/IoT/ncnn)
+set(NCNN_PATH ${NCNN_PROJ}/build/install/lib/cmake/ncnn)
 find_package(ncnn REQUIRED 
-            PATHS /root/git/ncnn/build/install/lib/cmake/ncnn 
+            PATHS ${NCNN_PATH}
             NO_DEFAULT_PATH)
 find_package(OpenCV REQUIRED)
 

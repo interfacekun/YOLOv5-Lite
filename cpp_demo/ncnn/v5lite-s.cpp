@@ -265,7 +265,7 @@ static int detect_yolov5(const cv::Mat& bgr, std::vector<Object>& objects)
 #if USE_INT8
     yolov5.opt.use_int8_inference=true;
 #else
-    yolov5.opt.use_vulkan_compute = false;
+    yolov5.opt.use_vulkan_compute = true;
     yolov5.opt.use_bf16_storage = true;
 #endif
 
@@ -321,7 +321,7 @@ static int detect_yolov5(const cv::Mat& bgr, std::vector<Object>& objects)
     in_pad.substract_mean_normalize(0, norm_vals);
 
     ncnn::Extractor ex = yolov5.create_extractor();
-
+    ex.set_num_threads(4);
     ex.input("images", in_pad);
 
     std::vector<Object> proposals;
