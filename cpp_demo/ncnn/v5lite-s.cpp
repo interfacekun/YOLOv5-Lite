@@ -12,29 +12,8 @@
 // CONDITIONS OF ANY KIND, either express or implied. See the License for the
 // specific language governing permissions and limitations under the License.
 
-#include "layer.h"
-#include "net.h"
 
-#if defined(USE_NCNN_SIMPLEOCV)
-#include "simpleocv.h"
-#else
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-#include <opencv2/imgproc/imgproc.hpp>
-#endif
-#include <float.h>
-#include <stdio.h>
-#include <vector>
-#include <sys/time.h>
-
-// 0 : FP16
-// 1 : INT8
-#define USE_INT8 0
-
-// 0 : Image
-// 1 : Camera
-#define USE_CAMERA 0
-
+#include "v5lite-s.h"
 struct Object
 {
     cv::Rect_<float> rect;
@@ -256,6 +235,178 @@ static void generate_proposals(const ncnn::Mat &anchors, int stride, const ncnn:
             }
         }
     }
+}
+
+cv::Mat bytesToMat(byte * bytes, int width, int height)
+{
+    // cv::Mat image = cv:Mat(height,width,CV_8UC3,bytes).clone(); // make a copy
+    cv::Mat image = cv::Mat(height, width, CV_8UC3, bytes);
+    return image;
+}
+
+static ncnn::Extractor initYolov5() {
+    ncnn::Net yolov5;
+
+#if USE_INT8
+    yolov5.opt.use_int8_inference=true;
+#else
+    yolov5.opt.use_vulkan_compute = true;
+    yolov5.opt.use_bf16_storage = true;
+#endif
+
+    // original pretrained model from https://github.com/ultralytics/yolov5
+    // the ncnn model https://github.com/nihui/ncnn-assets/tree/master/models
+
+#if USE_INT8
+    yolov5.load_param("../model_zoo/v5lite-i8e.param");
+    yolov5.load_model("../model_zoo/yolov5-i8e.bin");
+#else
+    yolov5.load_param("../model_zoo/v5lite-e.param");
+    yolov5.load_model("../model_zoo/yolov5-e.bin");
+#endif
+    ncnn::Extractor ex = yolov5.create_extractor();
+    return ex;
+}
+
+static int detectByYolov5(ncnn::Extractor& ex, byte *bytes, int width, int height) {
+    std::vector<Object> objects;
+    const cv::Mat bgr = bytesToMat(bytes, width, height);
+     struct timespec begin, end;
+    long time;
+    clock_gettime(CLOCK_MONOTONIC, &begin);
+
+    const int target_size = 320;
+    const float prob_threshold = 0.60f;
+    const float nms_threshold = 0.60f;
+
+    int img_w = bgr.cols;
+    int img_h = bgr.rows;
+
+    // letterbox pad to multiple of 32
+    int w = img_w;
+    int h = img_h;
+    float scale = 1.f;
+    if (w > h)
+    {
+        scale = (float)target_size / w;
+        w = target_size;
+        h = h * scale;
+    }
+    else
+    {
+        scale = (float)target_size / h;
+        h = target_size;
+        w = w * scale;
+    }
+
+    ncnn::Mat in = ncnn::Mat::from_pixels_resize(bgr.data, ncnn::Mat::PIXEL_BGR2RGB, img_w, img_h, w, h);
+
+    // pad to target_size rectangle
+    // yolov5/utils/datasets.py letterbox
+    int wpad = (w + 31) / 32 * 32 - w;
+    int hpad = (h + 31) / 32 * 32 - h;
+    ncnn::Mat in_pad;
+    ncnn::copy_make_border(in, in_pad, hpad / 2, hpad - hpad / 2, wpad / 2, wpad - wpad / 2, ncnn::BORDER_CONSTANT, 114.f);
+
+    const float norm_vals[3] = {1 / 255.f, 1 / 255.f, 1 / 255.f};
+    in_pad.substract_mean_normalize(0, norm_vals);
+
+    ex.set_num_threads(4);
+    ex.input("images", in_pad);
+
+    std::vector<Object> proposals;
+
+    // stride 8
+    {
+        ncnn::Mat out;
+        ex.extract("output", out);
+
+        ncnn::Mat anchors(6);
+        anchors[0] = 10.f;
+        anchors[1] = 13.f;
+        anchors[2] = 16.f;
+        anchors[3] = 30.f;
+        anchors[4] = 33.f;
+        anchors[5] = 23.f;
+
+        std::vector<Object> objects8;
+        generate_proposals(anchors, 8, in_pad, out, prob_threshold, objects8);
+
+        proposals.insert(proposals.end(), objects8.begin(), objects8.end());
+    }
+    // stride 16
+    {
+        ncnn::Mat out;
+        ex.extract("1111", out);
+
+        ncnn::Mat anchors(6);
+        anchors[0] = 30.f;
+        anchors[1] = 61.f;
+        anchors[2] = 62.f;
+        anchors[3] = 45.f;
+        anchors[4] = 59.f;
+        anchors[5] = 119.f;
+
+        std::vector<Object> objects16;
+        generate_proposals(anchors, 16, in_pad, out, prob_threshold, objects16);
+
+        proposals.insert(proposals.end(), objects16.begin(), objects16.end());
+    }
+    // stride 32
+    {
+        ncnn::Mat out;
+        ex.extract("2222", out);
+
+        ncnn::Mat anchors(6);
+        anchors[0] = 116.f;
+        anchors[1] = 90.f;
+        anchors[2] = 156.f;
+        anchors[3] = 198.f;
+        anchors[4] = 373.f;
+        anchors[5] = 326.f;
+
+        std::vector<Object> objects32;
+        generate_proposals(anchors, 32, in_pad, out, prob_threshold, objects32);
+
+        proposals.insert(proposals.end(), objects32.begin(), objects32.end());
+    }
+
+    // sort all proposals by score from highest to lowest
+    qsort_descent_inplace(proposals);
+
+    // apply nms with nms_threshold
+    std::vector<int> picked;
+    nms_sorted_bboxes(proposals, picked, nms_threshold);
+
+    int count = picked.size();
+
+    objects.resize(count);
+    for (int i = 0; i < count; i++)
+    {
+        objects[i] = proposals[picked[i]];
+
+        // adjust offset to original unpadded
+        float x0 = (objects[i].rect.x - (wpad / 2)) / scale;
+        float y0 = (objects[i].rect.y - (hpad / 2)) / scale;
+        float x1 = (objects[i].rect.x + objects[i].rect.width - (wpad / 2)) / scale;
+        float y1 = (objects[i].rect.y + objects[i].rect.height - (hpad / 2)) / scale;
+
+        // clip
+        x0 = std::max(std::min(x0, (float)(img_w - 1)), 0.f);
+        y0 = std::max(std::min(y0, (float)(img_h - 1)), 0.f);
+        x1 = std::max(std::min(x1, (float)(img_w - 1)), 0.f);
+        y1 = std::max(std::min(y1, (float)(img_h - 1)), 0.f);
+
+        objects[i].rect.x = x0;
+        objects[i].rect.y = y0;
+        objects[i].rect.width = x1 - x0;
+        objects[i].rect.height = y1 - y0;
+    }
+
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    time = (end.tv_sec - begin.tv_sec) + (end.tv_nsec - begin.tv_nsec);
+    printf(">> detect Time : %lf ms\n", (double)time/1000000);
+    return 0;
 }
 
 static int detect_yolov5(const cv::Mat& bgr, std::vector<Object>& objects)
