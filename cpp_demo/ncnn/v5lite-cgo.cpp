@@ -1,20 +1,18 @@
 
-#include "v5lite-cgo.h"
+#include "v5lite-s.h"
 
 extern "C" {
-    #include "v5lite-s.h"
+   #include "v5lite-cgo.h"
 }
 
-struct CNNEx_T: ncnn::Extractor {
-    CNNEx_T(): ncnn::Extractor {}
-    ~CNNEx_T() {}
+struct cnnex: ncnn::Extractor {
+};
+
+cnnex* newCnnex() {
+    cnnex* n = (cnnex*)initYolov5();
+    return n;
 }
 
-CNNEx_T newCNNEx_T() {
-    auto p = initYolov5();
-    return p;
-}
-
-int runDetect(CNNEx_T& ex, byte *bytes, int width, int height) {
+int runDetect(cnnex& ex, byte *bytes, int width, int height) {
     return detectByYolov5(ex, bytes, width, height);
 }

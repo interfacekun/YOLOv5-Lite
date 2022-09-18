@@ -458,7 +458,7 @@ cv::Mat bytesToMat(byte * bytes, int width, int height)
     return image;
 }
 
-static ncnn::Extractor initYolov5() {
+ncnn::Extractor* initYolov5() {
     ncnn::Net yolov5;
 
 #if USE_INT8
@@ -478,11 +478,12 @@ static ncnn::Extractor initYolov5() {
     yolov5.load_param("../model_zoo/v5lite-e.param");
     yolov5.load_model("../model_zoo/yolov5-e.bin");
 #endif
-    ncnn::Extractor ex = yolov5.create_extractor();
+    // ncnn::Extractor ex = yolov5.create_extractor();
+    ncnn::Extractor *ex = new ncnn::Extractor(&yolov5, yolov5.get_blob_count());
     return ex;
 }
 
-static int detectByYolov5(ncnn::Extractor& ex, byte *bytes, int width, int height) {
+int detectByYolov5(ncnn::Extractor& ex, byte *bytes, int width, int height) {
     std::vector<Object> objects;
     const cv::Mat bgr = bytesToMat(bytes, width, height);
     struct timespec begin, end;

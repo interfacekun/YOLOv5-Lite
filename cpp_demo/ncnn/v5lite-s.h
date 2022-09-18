@@ -21,5 +21,5 @@
 #define USE_CAMERA 0
 typedef unsigned char byte;
 
-static ncnn::Extractor initYolov5();
-static int detectByYolov5(ncnn::Extractor& ex, byte *bytes, int width, int height);
+ncnn::Extractor* initYolov5();
+int detectByYolov5(ncnn::Extractor& ex, byte *bytes, int width, int height);
