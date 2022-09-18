@@ -13,6 +13,6 @@ cnnex* newCnnex() {
     return n;
 }
 
-int runDetect(cnnex& ex, byte *bytes, int width, int height) {
-    return detectByYolov5(ex, bytes, width, height);
+int runDetect(cnnex *ex, byte *bytes, int width, int height) {
+    return detectByYolov5(*ex, bytes, width, height);
 }

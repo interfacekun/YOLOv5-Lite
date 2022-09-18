@@ -17,12 +17,12 @@ find_package(OpenCV REQUIRED)
 add_executable(ncnnv5lite v5lite-s.cpp)
 target_link_libraries(ncnnv5lite ncnn ${OpenCV_LIBS})
 
-add_library(libv5lite SHARED v5lite-s.cpp)
-target_link_libraries(libv5lite ncnn ${OpenCV_LIBS})
+add_library(v5lite SHARED v5lite-s.cpp)
+target_link_libraries(v5lite ncnn ${OpenCV_LIBS})
 
 # add_executable(ncnnv5litecgo v5lite-cgo.cpp)
 # target_link_libraries(ncnnv5litecgo ncnn ${OpenCV_LIBS})
 
-add_library(libv5litecgo SHARED v5lite-cgo.cpp v5lite-s.cpp)
-target_link_libraries(libv5litecgo ncnn ${OpenCV_LIBS})
+add_library(v5litecgo SHARED v5lite-cgo.cpp v5lite-s.cpp)
+target_link_libraries(v5litecgo ncnn ${OpenCV_LIBS})
 #target_link_libraries(ncnnv5lite ${libncnn.a} ${OpenCV_LIBS})

@@ -1,4 +1,4 @@
 typedef unsigned char byte;
-struct cnnex;
+typedef struct cnnex cnnex;
 cnnex* newCnnex();
-int runDetect(cnnex& ex, byte *bytes, int width, int height);
+int runDetect(cnnex *ex, byte *bytes, int width, int height);
