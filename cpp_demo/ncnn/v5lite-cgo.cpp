@@ -5,6 +5,9 @@ extern "C" {
    #include "v5lite-cgo.h"
 }
 
+int test() {
+    printf("hello v5lite-cgo");
+}
 struct cnnex: ncnn::Extractor {
 };
 
