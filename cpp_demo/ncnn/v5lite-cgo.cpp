@@ -33,9 +33,10 @@ int runDetect(cnnex *c, byte *bytes, int width, int height)
         c->ex, c->data, ((char *)bytes), width, height);
     try
     {
-        throw exception();
-        // return detectByYolov5(*(c->ex), bytes, width, height);
-        c->ex->set_num_threads(2);
+      
+        detectByYolov5(*(c->ex), bytes, width, height);
+        // throw exception();
+        // c->ex->set_num_threads(2);
         return 0;
     }
     // catch (std::exception &e)
