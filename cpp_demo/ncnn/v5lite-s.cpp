@@ -242,10 +242,10 @@ static int detect_yolov5(const cv::Mat& bgr, std::vector<Object>& objects)
 {
     ncnn::Net yolov5;
 
-#if USE_INT8
+#ifdef USE_INT8
     yolov5.opt.use_int8_inference=true;
 #else
-    #if USE_VULKAN_COMPUTE
+    #ifdef USE_VULKAN_COMPUTE
         yolov5.opt.use_vulkan_compute = true;
     #else
         yolov5.opt.use_vulkan_compute = false;
@@ -256,7 +256,7 @@ static int detect_yolov5(const cv::Mat& bgr, std::vector<Object>& objects)
     // original pretrained model from https://github.com/ultralytics/yolov5
     // the ncnn model https://github.com/nihui/ncnn-assets/tree/master/models
 
-#if USE_INT8
+#ifdef USE_INT8
     yolov5.load_param("../model_zoo/v5lite-i8e.param");
     yolov5.load_model("../model_zoo/yolov5-i8e.bin");
 #else
@@ -465,10 +465,10 @@ cv::Mat bytesToMat(byte * bytes, int width, int height)
 ncnn::Extractor* initYolov5() {
     ncnn::Net yolov5;
 
-#if USE_INT8
+#ifdef USE_INT8
     yolov5.opt.use_int8_inference=true;
 #else
-    #if USE_VULKAN_COMPUTE
+    #ifdef USE_VULKAN_COMPUTE
         yolov5.opt.use_vulkan_compute = true;
     #else
         yolov5.opt.use_vulkan_compute = false;
@@ -479,7 +479,7 @@ ncnn::Extractor* initYolov5() {
     // original pretrained model from https://github.com/ultralytics/yolov5
     // the ncnn model https://github.com/nihui/ncnn-assets/tree/master/models
 
-#if USE_INT8
+#ifdef USE_INT8
     yolov5.load_param("../model_zoo/v5lite-i8e.param");
     yolov5.load_model("../model_zoo/yolov5-i8e.bin");
 #else
