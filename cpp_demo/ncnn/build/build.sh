@@ -1,3 +1,4 @@
 #!/bin/bash
-cmake ..
-# make -j4
+THREAD=6
+cmake --build . -j $THREAD
+cmake --build . --target install
