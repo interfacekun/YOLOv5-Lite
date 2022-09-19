@@ -16,6 +16,8 @@
 // 1 : INT8
 #define USE_INT8 0
 
+#define USE_VULKAN_COMPUTE 1
+
 // 0 : Image
 // 1 : Camera
 #define USE_CAMERA 0

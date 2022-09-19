@@ -245,7 +245,11 @@ static int detect_yolov5(const cv::Mat& bgr, std::vector<Object>& objects)
 #if USE_INT8
     yolov5.opt.use_int8_inference=true;
 #else
-    yolov5.opt.use_vulkan_compute = true;
+    #if USE_VULKAN_COMPUTE
+        yolov5.opt.use_vulkan_compute = true;
+    #else
+        yolov5.opt.use_vulkan_compute = false;
+    #endif
     yolov5.opt.use_bf16_storage = true;
 #endif
 
@@ -464,7 +468,11 @@ ncnn::Extractor* initYolov5() {
 #if USE_INT8
     yolov5.opt.use_int8_inference=true;
 #else
-    yolov5.opt.use_vulkan_compute = true;
+    #if USE_VULKAN_COMPUTE
+        yolov5.opt.use_vulkan_compute = true;
+    #else
+        yolov5.opt.use_vulkan_compute = false;
+    #endif
     yolov5.opt.use_bf16_storage = true;
 #endif
 
