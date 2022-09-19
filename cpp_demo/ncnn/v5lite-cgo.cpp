@@ -22,7 +22,11 @@ cnnex* newCnnex() {
 }
 
 int runDetect(cnnex *c, byte *bytes, int width, int height) {
-    printf("runDetect c->ex:%p c->data:%d bytes:%s", c->ex, c->data, ((char *)bytes));
+    printf(
+        "runDetect c->ex:%p c->data:%d bytes:%s width:%d height:%d", 
+        c->ex, c->data, ((char *)bytes), width, height
+    );
     // return detectByYolov5(*(c->ex), bytes, width, height);
+    c->ex->set_num_threads(2);
     return 0;
 }

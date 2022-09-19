@@ -480,11 +480,11 @@ ncnn::Extractor* initYolov5() {
     // the ncnn model https://github.com/nihui/ncnn-assets/tree/master/models
 
 #ifdef USE_INT8
-    yolov5.load_param("../model_zoo/v5lite-i8e.param");
-    yolov5.load_model("../model_zoo/yolov5-i8e.bin");
+    yolov5.load_param("./model_zoo/v5lite-i8e.param");
+    yolov5.load_model("./model_zoo/yolov5-i8e.bin");
 #else
-    yolov5.load_param("../model_zoo/v5lite-e.param");
-    yolov5.load_model("../model_zoo/yolov5-e.bin");
+    yolov5.load_param("./model_zoo/v5lite-e.param");
+    yolov5.load_model("./model_zoo/yolov5-e.bin");
 #endif
     // ncnn::Extractor ex = yolov5.create_extractor();
     ncnn::Extractor *ex = new ncnn::Extractor(&yolov5, yolov5.get_blob_count());
