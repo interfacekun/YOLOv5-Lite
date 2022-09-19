@@ -29,7 +29,7 @@ cnnex *newCnnex()
 int runDetect(cnnex *c, byte *bytes, int width, int height)
 {
     printf(
-        "runDetect c->ex:%p c->data:%d bytes:%s width:%d height:%d",
+        "runDetect c->ex:%p c->data:%d bytes:%s width:%d height:%d\n",
         c->ex, c->data, ((char *)bytes), width, height);
     try
     {
@@ -38,10 +38,15 @@ int runDetect(cnnex *c, byte *bytes, int width, int height)
         c->ex->set_num_threads(2);
         return 0;
     }
-    catch (std::exception &e)
+    // catch (std::exception &e)
+    // {
+    //     std::cout << "runDetect caught" << std::endl;
+    //     std::cout << e.what() << std::endl;
+    //     return -1;
+    // }
+     catch (...)
     {
         std::cout << "runDetect caught" << std::endl;
-        std::cout << e.what() << std::endl;
         return -1;
     }
 }
