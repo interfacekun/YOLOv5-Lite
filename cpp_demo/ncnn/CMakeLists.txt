@@ -18,17 +18,22 @@ MESSAGE(STATUS "BUILD FROM HOST ${HOST}")
 if(${HOST} STREQUAL "interface")
     set(NCNN_PROJ /Volumes/outDisk/git/IoT/ncnn)
     set(CMAKE_INSTALL_PREFIX /Volumes/outDisk/git/IoT/go/vision)
-    add_definitions(-DUSE_VULKAN_COMPUTE)
+    # add_definitions(-DUSE_VULKAN_COMPUTE)
+    # set(NCNN_PATH ${NCNN_PROJ}/build/install/lib/cmake/ncnn)
+
+    set(NCNN_PATH ${NCNN_PROJ}/build-aarch64/install/lib/cmake/ncnn)
 elseif(${HOST} STREQUAL "xmk")
     set(NCNN_PROJ /Users/xmk/git/IoT/ncnn)
     set(CMAKE_INSTALL_PREFIX /Users/xmk/git/IoT/go/vision)
     add_definitions(-DUSE_VULKAN_COMPUTE)
+    set(NCNN_PATH ${NCNN_PROJ}/build/install/lib/cmake/ncnn)
 else()
     set(NCNN_PROJ /root/git/IoT/ncnn)
     set(CMAKE_INSTALL_PREFIX /root/git/IoT/go/vision)
+    set(NCNN_PATH ${NCNN_PROJ}/build/install/lib/cmake/ncnn)
 endif()
 
-set(NCNN_PATH ${NCNN_PROJ}/build/install/lib/cmake/ncnn)
+
 find_package(ncnn REQUIRED 
             PATHS ${NCNN_PATH}
             NO_DEFAULT_PATH)

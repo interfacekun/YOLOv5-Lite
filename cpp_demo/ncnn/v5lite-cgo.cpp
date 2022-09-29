@@ -26,7 +26,7 @@ cnnex *newCnnex()
     return c;
 }
 
-int runDetect(cnnex *c, byte *bytes, int width, int height)
+int runDetect(cnnex *c, unsigned char *bytes, int width, int height)
 {
     printf(
         "runDetect c->ex:%p c->data:%d bytes:%s width:%d height:%d\n",
