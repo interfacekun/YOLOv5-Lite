@@ -2,6 +2,8 @@ project(YOLOv5s)
 
 cmake_minimum_required(VERSION 3.10.2)
 
+
+
 #set(ncnn_DIR "/root/git/ncnn-tensorflow/build/src/CMakeFiles/ncnn.dir")
 
 #INCLUDE_DIRECTORIES(/root/git/ncnn-tensorflow/build/install/include)
@@ -22,6 +24,8 @@ if(${HOST} STREQUAL "interface")
     # set(NCNN_PATH ${NCNN_PROJ}/build/install/lib/cmake/ncnn)
 
     set(NCNN_PATH ${NCNN_PROJ}/build-aarch64/install/lib/cmake/ncnn)
+    include_directories("/Volumes/outDisk/git/IoT/YOLOv5-Lite/cpp_demo/ncnn/include")
+    link_directories("/Volumes/outDisk/git/IoT/YOLOv5-Lite/cpp_demo/ncnn/lib")
 elseif(${HOST} STREQUAL "xmk")
     set(NCNN_PROJ /Users/xmk/git/IoT/ncnn)
     set(CMAKE_INSTALL_PREFIX /Users/xmk/git/IoT/go/vision)
@@ -39,21 +43,27 @@ find_package(ncnn REQUIRED
             NO_DEFAULT_PATH)
 find_package(OpenCV REQUIRED)
 
+# message("OpenCV" ${OpenCV_LIBS})
+
 add_executable(ncnnv5lite v5lite-s.cpp)
-target_link_libraries(ncnnv5lite ncnn ${OpenCV_LIBS})
+# target_link_libraries(ncnnv5lite ncnn ${OpenCV_LIBS})
+target_link_libraries(ncnnv5lite ncnn -lopencv_java4)
+
 
 add_library(v5lite SHARED v5lite-s.cpp)
-target_link_libraries(v5lite ncnn ${OpenCV_LIBS})
+# target_link_libraries(v5lite ncnn ${OpenCV_LIBS})
+target_link_libraries(v5lite ncnn -lopencv_java4)
 
 # add_executable(ncnnv5litecgo v5lite-cgo.cpp)
 # target_link_libraries(ncnnv5litecgo ncnn ${OpenCV_LIBS})
 
 add_library(v5litecgo SHARED v5lite-cgo.cpp v5lite-s.cpp)
-target_link_libraries(v5litecgo ncnn ${OpenCV_LIBS})
-#target_link_libraries(ncnnv5lite ${libncnn.a} ${OpenCV_LIBS})
+# target_link_libraries(v5litecgo ncnn ${OpenCV_LIBS})
+target_link_libraries(v5litecgo ncnn -lopencv_java4)
 
-install(TARGETS v5litecgo
-        LIBRARY DESTINATION lib/${HOST}
-)
+# target_link_libraries(ncnnv5lite ${libncnn.a} ${OpenCV_LIBS})
+# install(TARGETS v5litecgo
+#         LIBRARY DESTINATION lib/${HOST}
+# )
 set(INSTALL_HEAD_FILES v5lite-cgo.h)
-install(FILES ${INSTALL_HEAD_FILES} DESTINATION  ${CMAKE_INSTALL_PREFIX}/src)
+# install(FILES ${INSTALL_HEAD_FILES} DESTINATION  ${CMAKE_INSTALL_PREFIX}/src)
