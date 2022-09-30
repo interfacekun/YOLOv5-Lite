@@ -22,10 +22,12 @@ if(${HOST} STREQUAL "interface")
     set(CMAKE_INSTALL_PREFIX /Volumes/outDisk/git/IoT/go/vision)
     # add_definitions(-DUSE_VULKAN_COMPUTE)
     # set(NCNN_PATH ${NCNN_PROJ}/build/install/lib/cmake/ncnn)
-
+    set(YOLO_PROJ /Volumes/outDisk/git/IoT/YOLOv5-Lite/cpp_demo/ncnn)
     set(NCNN_PATH ${NCNN_PROJ}/build-aarch64/install/lib/cmake/ncnn)
-    include_directories("/Volumes/outDisk/git/IoT/YOLOv5-Lite/cpp_demo/ncnn/include")
-    link_directories("/Volumes/outDisk/git/IoT/YOLOv5-Lite/cpp_demo/ncnn/lib")
+    # 指定include 和动态库路径
+    # include_directories(${YOLO_PROJ}/include)
+    # link_directories(${YOLO_PROJ}/lib)
+    set(OCV_PATH ${YOLO_PROJ}/opencv-4.5.4/aarch64-install)
 elseif(${HOST} STREQUAL "xmk")
     set(NCNN_PROJ /Users/xmk/git/IoT/ncnn)
     set(CMAKE_INSTALL_PREFIX /Users/xmk/git/IoT/go/vision)
@@ -41,25 +43,26 @@ endif()
 find_package(ncnn REQUIRED 
             PATHS ${NCNN_PATH}
             NO_DEFAULT_PATH)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV REQUIRED 
+            PATHS ${OCV_PATH}
+            NO_DEFAULT_PATH)
+# find_package(OpenCV REQUIRED)
 
-# message("OpenCV" ${OpenCV_LIBS})
+message("OpenCV" ${OpenCV_LIBS})
 
 add_executable(ncnnv5lite v5lite-s.cpp)
-# target_link_libraries(ncnnv5lite ncnn ${OpenCV_LIBS})
-target_link_libraries(ncnnv5lite ncnn -lopencv_java4)
+target_link_libraries(ncnnv5lite ncnn ${OpenCV_LIBS})
 
 
 add_library(v5lite SHARED v5lite-s.cpp)
-# target_link_libraries(v5lite ncnn ${OpenCV_LIBS})
-target_link_libraries(v5lite ncnn -lopencv_java4)
+target_link_libraries(v5lite ncnn ${OpenCV_LIBS})
 
 # add_executable(ncnnv5litecgo v5lite-cgo.cpp)
 # target_link_libraries(ncnnv5litecgo ncnn ${OpenCV_LIBS})
 
 add_library(v5litecgo SHARED v5lite-cgo.cpp v5lite-s.cpp)
-# target_link_libraries(v5litecgo ncnn ${OpenCV_LIBS})
-target_link_libraries(v5litecgo ncnn -lopencv_java4)
+target_link_libraries(v5litecgo ncnn ${OpenCV_LIBS})
+
 
 # target_link_libraries(ncnnv5lite ${libncnn.a} ${OpenCV_LIBS})
 # install(TARGETS v5litecgo
