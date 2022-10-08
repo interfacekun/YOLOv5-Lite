@@ -15,4 +15,4 @@ else
 fi
 
 
-./ncnnv5lite $YOLO_PATH/cpp_demo/ncnn/images/horse.jpg
+./ncnnv5lite ${YOLO_PATH}/cpp_demo/ncnn/images/horse.jpg

@@ -460,40 +460,65 @@ static void draw_objects(const cv::Mat& bgr, const std::vector<Object>& objects)
 cv::Mat bytesToMat(byte * bytes, int width, int height)
 {
     // cv::Mat image = cv:Mat(height,width,CV_8UC3,bytes).clone(); // make a copy
-    cv::Mat image = cv::Mat(height, width, CV_8UC3, bytes);
+    cv::Mat image = cv::Mat(height, width, CV_8UC3, bytes).clone();
     return image;
 }
 
-ncnn::Extractor* initYolov5() {
-    ncnn::Net yolov5;
+ ncnn::Net* initYolov5() {
+    ncnn::Net* yolov5 = new ncnn::Net();
 
 #ifdef USE_INT8
-    yolov5.opt.use_int8_inference=true;
+    yolov5->opt.use_int8_inference=true;
 #else
     #ifdef USE_VULKAN_COMPUTE
-        yolov5.opt.use_vulkan_compute = true;
+        yolov5->opt.use_vulkan_compute = true;
     #else
-        yolov5.opt.use_vulkan_compute = false;
+        yolov5->opt.use_vulkan_compute = false;
     #endif
-    yolov5.opt.use_bf16_storage = true;
+    yolov5->opt.use_bf16_storage = true;
 #endif
 
     // original pretrained model from https://github.com/ultralytics/yolov5
     // the ncnn model https://github.com/nihui/ncnn-assets/tree/master/models
 
 #ifdef USE_INT8
-    yolov5.load_param("./model_zoo/v5lite-i8e.param");
-    yolov5.load_model("./model_zoo/yolov5-i8e.bin");
+    yolov5->load_param("./model_zoo/v5lite-i8e.param");
+    yolov5->load_model("./model_zoo/yolov5-i8e.bin");
 #else
-    yolov5.load_param("./model_zoo/v5lite-e.param");
-    yolov5.load_model("./model_zoo/yolov5-e.bin");
+    yolov5->load_param("./model_zoo/v5lite-e.param");
+    yolov5->load_model("./model_zoo/yolov5-e.bin");
 #endif
-    // ncnn::Extractor ex = yolov5.create_extractor();
-    ncnn::Extractor *ex = new ncnn::Extractor(&yolov5, yolov5.get_blob_count());
-    return ex;
+    return yolov5;
+}
+ncnn::Net* initYolov5Me() {
+    ncnn::Net* yolov5 = new  ncnn::Net();
+
+#ifdef USE_INT8
+    yolov5->opt.use_int8_inference=true;
+#else
+    #ifdef USE_VULKAN_COMPUTE
+        yolov5->opt.use_vulkan_compute = true;
+    #else
+        yolov5->opt.use_vulkan_compute = false;
+    #endif
+    yolov5->opt.use_bf16_storage = true;
+#endif
+
+    // original pretrained model from https://github.com/ultralytics/yolov5
+    // the ncnn model https://github.com/nihui/ncnn-assets/tree/master/models
+
+#ifdef USE_INT8
+    yolov5->load_param("./model_zoo/v5lite-i8e.param");
+    yolov5->load_model("./model_zoo/yolov5-i8e.bin");
+#else
+    yolov5->load_param("./model_zoo/v5lite-e.param");
+    yolov5->load_model("./model_zoo/yolov5-e.bin");
+#endif
+    return yolov5;
 }
 
-int detectByYolov5(ncnn::Extractor& ex, byte *bytes, int width, int height) {
+int detectByYolov5(ncnn::Net &yolov5, byte *bytes, int width, int height) {
+    ncnn::Extractor ex = yolov5.create_extractor();
     std::vector<Object> objects;
     const cv::Mat bgr = bytesToMat(bytes, width, height);
     struct timespec begin, end;
@@ -645,7 +670,9 @@ int detectByYolov5(ncnn::Extractor& ex, byte *bytes, int width, int height) {
     return 0;
 }
 
-int testMe(ncnn::Extractor& ex, const cv::Mat bgr) {
+int testMe(ncnn::Net &yolov5, const cv::Mat &bgr) {
+    ncnn::Extractor ex = yolov5.create_extractor();
+
     std::vector<Object> objects;
     // const cv::Mat bgr = bytesToMat(bytes, width, height);
     struct timespec begin, end;
@@ -697,9 +724,12 @@ int testMe(ncnn::Extractor& ex, const cv::Mat bgr) {
     const float norm_vals[3] = {1 / 255.f, 1 / 255.f, 1 / 255.f};
     in_pad.substract_mean_normalize(0, norm_vals);
     ex.set_num_threads(4);
+    printf("t1\n");
 
     // 这里会报错，如果图片数据不对
     ex.input("images", in_pad);
+
+    printf("t2\n");
 
     std::vector<Object> proposals;
 
@@ -707,6 +737,8 @@ int testMe(ncnn::Extractor& ex, const cv::Mat bgr) {
     {
         ncnn::Mat out;
         ex.extract("output", out);
+
+        printf("t3\n");
 
         ncnn::Mat anchors(6);
         anchors[0] = 10.f;
@@ -726,6 +758,8 @@ int testMe(ncnn::Extractor& ex, const cv::Mat bgr) {
         ncnn::Mat out;
         ex.extract("1111", out);
 
+        printf("t4\n");
+
         ncnn::Mat anchors(6);
         anchors[0] = 30.f;
         anchors[1] = 61.f;
@@ -744,6 +778,8 @@ int testMe(ncnn::Extractor& ex, const cv::Mat bgr) {
         ncnn::Mat out;
         ex.extract("2222", out);
 
+        printf("t5\n");
+
         ncnn::Mat anchors(6);
         anchors[0] = 116.f;
         anchors[1] = 90.f;
@@ -758,6 +794,8 @@ int testMe(ncnn::Extractor& ex, const cv::Mat bgr) {
         proposals.insert(proposals.end(), objects32.begin(), objects32.end());
     }
 
+    printf("t6\n");
+
     // sort all proposals by score from highest to lowest
     qsort_descent_inplace(proposals);
 
@@ -766,6 +804,8 @@ int testMe(ncnn::Extractor& ex, const cv::Mat bgr) {
     nms_sorted_bboxes(proposals, picked, nms_threshold);
 
     int count = picked.size();
+
+    printf("t7\n");
 
     objects.resize(count);
     for (int i = 0; i < count; i++)
@@ -790,6 +830,8 @@ int testMe(ncnn::Extractor& ex, const cv::Mat bgr) {
         objects[i].rect.height = y1 - y0;
     }
 
+    printf("t8\n");
+
     clock_gettime(CLOCK_MONOTONIC, &end);
     time = (end.tv_sec - begin.tv_sec) + (end.tv_nsec - begin.tv_nsec);
     printf(">> detect Time : %lf ms\n", (double)time/1000000);
@@ -799,9 +841,18 @@ int testMe(ncnn::Extractor& ex, const cv::Mat bgr) {
 
 int testBytes(byte * bytes, int width, int height) {
     cv::Mat m = bytesToMat(bytes, width, height);
-    std::vector<Object> objects;
-    detect_yolov5(m, objects);
-    draw_objects(m, objects);
+
+    // std::vector<uchar> data = std::vector<uchar>(bytes, strlen(bytes));
+    // cv::Mat m = cv::imdecode(data, 1);
+	// cv::Mat m2(cv::Size(width, height), CV_8UC3, cv::Scalar(0));
+	// cv::cvtColor(m, m2, 47);
+
+    // std::vector<Object> objects;
+    // detect_yolov5(m, objects);
+    // draw_objects(m, objects);
+    // ncnn::Extractor* ex = initYolov5();
+    // testMe(*ex, m);
+
     return 0;
 }
 
@@ -835,6 +886,7 @@ int main(int argc, char** argv)
     }
 
     const char* imagepath = argv[1];
+    printf("imagepath : %s\n", imagepath);
 
     struct timespec begin, end;
     long time;
@@ -847,17 +899,17 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    std::vector<Object> objects;
-    detect_yolov5(m, objects);
+    // std::vector<Object> objects;
+    // detect_yolov5(m, objects);
 
-    clock_gettime(CLOCK_MONOTONIC, &end);
-    time = (end.tv_sec - begin.tv_sec) + (end.tv_nsec - begin.tv_nsec);
-    printf(">> Time : %lf ms\n", (double)time/1000000);
+    // clock_gettime(CLOCK_MONOTONIC, &end);
+    // time = (end.tv_sec - begin.tv_sec) + (end.tv_nsec - begin.tv_nsec);
+    // printf(">> Time : %lf ms\n", (double)time/1000000);
 
-    draw_objects(m, objects);
+    // draw_objects(m, objects);
 
-    // ncnn::Extractor* ex = initYolov5();
-    // testMe(*ex, m);
+    ncnn::Net *yolov5 = initYolov5Me();
+    testMe(*yolov5, m);
     return 0;
 }
 #endif
