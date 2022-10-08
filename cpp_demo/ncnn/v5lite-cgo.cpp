@@ -26,7 +26,7 @@ cnnex *newCnnex()
     return c;
 }
 
-int runDetect(cnnex *c, unsigned char *bytes, int width, int height)
+int runDetect(cnnex *c, unsigned char *bytes, int width, int height, int size_of_buffer)
 {
     printf(
         "runDetect c->ex:%p c->data:%d bytes:%s width:%d height:%d\n",
@@ -34,7 +34,7 @@ int runDetect(cnnex *c, unsigned char *bytes, int width, int height)
     try
     {
       
-        detectByYolov5(*(c->yolov5), bytes, width, height);
+        detectByYolov5(*(c->yolov5), bytes, width, height, size_of_buffer);
         // testBytes(bytes, width, height);
         // throw exception();
         // c->ex->set_num_threads(2);

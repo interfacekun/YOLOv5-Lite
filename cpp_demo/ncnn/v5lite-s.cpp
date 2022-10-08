@@ -457,10 +457,17 @@ static void draw_objects(const cv::Mat& bgr, const std::vector<Object>& objects)
 #endif
 }
 
-cv::Mat bytesToMat(byte * bytes, int width, int height)
+cv::Mat bytesToMat(byte * bytes, int width, int height, int size_of_buffer)
 {
     // cv::Mat image = cv:Mat(height,width,CV_8UC3,bytes).clone(); // make a copy
-    cv::Mat image = cv::Mat(height, width, CV_8UC3, bytes).clone();
+    // cv::Mat image = cv::Mat(height, width, CV_8UC3, bytes).clone();
+    
+    std::vector<uchar> data;
+    data.assign(bytes, bytes + size_of_buffer);
+    cv::Mat image;
+    image = cv::imdecode(data, 1);
+    // cv::flip(image, image, -1);
+    image.channels();
     return image;
 }
 
@@ -517,10 +524,10 @@ ncnn::Net* initYolov5Me() {
     return yolov5;
 }
 
-int detectByYolov5(ncnn::Net &yolov5, byte *bytes, int width, int height) {
+int detectByYolov5(ncnn::Net &yolov5, byte *bytes, int width, int height, int size_of_buffer) {
     ncnn::Extractor ex = yolov5.create_extractor();
     std::vector<Object> objects;
-    const cv::Mat bgr = bytesToMat(bytes, width, height);
+    const cv::Mat bgr = bytesToMat(bytes, width, height, size_of_buffer);
     struct timespec begin, end;
     long time;
     clock_gettime(CLOCK_MONOTONIC, &begin);
@@ -840,7 +847,7 @@ int testMe(ncnn::Net &yolov5, const cv::Mat &bgr) {
 }
 
 int testBytes(byte * bytes, int width, int height) {
-    cv::Mat m = bytesToMat(bytes, width, height);
+    cv::Mat m = bytesToMat(bytes, width, height, 10);
 
     // std::vector<uchar> data = std::vector<uchar>(bytes, strlen(bytes));
     // cv::Mat m = cv::imdecode(data, 1);

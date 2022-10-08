@@ -24,5 +24,5 @@
 typedef unsigned char byte;
 
 ncnn::Net* initYolov5();
-int detectByYolov5(ncnn::Net &yolov5, byte *bytes, int width, int height);
+int detectByYolov5(ncnn::Net &yolov5, byte *bytes, int width, int height, int size_of_buffer);
 int testBytes(byte * bytes, int width, int height);
