@@ -45,7 +45,6 @@ else()
     set(NCNN_PATH ${NCNN_PROJ}/build/install/lib/cmake/ncnn)
 endif()
 
-
 find_package(ncnn REQUIRED 
             PATHS ${NCNN_PATH}
             NO_DEFAULT_PATH)
