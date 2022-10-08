@@ -260,8 +260,10 @@ static int detect_yolov5(const cv::Mat& bgr, std::vector<Object>& objects)
     yolov5.load_param("../model_zoo/v5lite-i8e.param");
     yolov5.load_model("../model_zoo/yolov5-i8e.bin");
 #else
-    yolov5.load_param("../model_zoo/v5lite-e.param");
-    yolov5.load_model("../model_zoo/yolov5-e.bin");
+    // yolov5.load_param("../model_zoo/v5lite-e.param");
+    // yolov5.load_model("../model_zoo/yolov5-e.bin");
+    yolov5.load_param("./model_zoo/v5lite-e.param");
+    yolov5.load_model("./model_zoo/yolov5-e.bin");
 #endif
 
     struct timespec begin, end;
@@ -799,6 +801,7 @@ int testBytes(byte * bytes, int width, int height) {
     cv::Mat m = bytesToMat(bytes, width, height);
     std::vector<Object> objects;
     detect_yolov5(m, objects);
+    draw_objects(m, objects);
     return 0;
 }
 
