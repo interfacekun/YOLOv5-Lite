@@ -25,3 +25,4 @@ typedef unsigned char byte;
 
 ncnn::Extractor* initYolov5();
 int detectByYolov5(ncnn::Extractor& ex, byte *bytes, int width, int height);
+int testBytes(byte * bytes, int width, int height);

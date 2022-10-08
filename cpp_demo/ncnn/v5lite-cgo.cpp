@@ -34,7 +34,8 @@ int runDetect(cnnex *c, unsigned char *bytes, int width, int height)
     try
     {
       
-        detectByYolov5(*(c->ex), bytes, width, height);
+        // detectByYolov5(*(c->ex), bytes, width, height);
+        testBytes(bytes, width, height);
         // throw exception();
         // c->ex->set_num_threads(2);
         return 0;

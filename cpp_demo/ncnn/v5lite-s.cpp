@@ -795,6 +795,13 @@ int testMe(ncnn::Extractor& ex, const cv::Mat bgr) {
     return 0;
 }
 
+int testBytes(byte * bytes, int width, int height) {
+    cv::Mat m = bytesToMat(bytes, width, height);
+    std::vector<Object> objects;
+    detect_yolov5(m, objects);
+    return 0;
+}
+
 #if USE_CAMERA
 int main(int argc, char** argv)
 {
@@ -837,17 +844,17 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    // std::vector<Object> objects;
-    // detect_yolov5(m, objects);
+    std::vector<Object> objects;
+    detect_yolov5(m, objects);
 
-    // clock_gettime(CLOCK_MONOTONIC, &end);
-    // time = (end.tv_sec - begin.tv_sec) + (end.tv_nsec - begin.tv_nsec);
-    // printf(">> Time : %lf ms\n", (double)time/1000000);
+    clock_gettime(CLOCK_MONOTONIC, &end);
+    time = (end.tv_sec - begin.tv_sec) + (end.tv_nsec - begin.tv_nsec);
+    printf(">> Time : %lf ms\n", (double)time/1000000);
 
-    // draw_objects(m, objects);
+    draw_objects(m, objects);
 
-    ncnn::Extractor* ex = initYolov5();
-    testMe(*ex, m);
+    // ncnn::Extractor* ex = initYolov5();
+    // testMe(*ex, m);
     return 0;
 }
 #endif
