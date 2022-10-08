@@ -20,14 +20,20 @@ MESSAGE(STATUS "BUILD FROM HOST ${HOST}")
 if(${HOST} STREQUAL "interface")
     set(NCNN_PROJ /Volumes/outDisk/git/IoT/ncnn)
     set(CMAKE_INSTALL_PREFIX /Volumes/outDisk/git/IoT/go/vision)
-    # add_definitions(-DUSE_VULKAN_COMPUTE)
-    # set(NCNN_PATH ${NCNN_PROJ}/build/install/lib/cmake/ncnn)
     set(YOLO_PROJ /Volumes/outDisk/git/IoT/YOLOv5-Lite/cpp_demo/ncnn)
-    set(NCNN_PATH ${NCNN_PROJ}/build-aarch64/install/lib/cmake/ncnn)
+    if(TARGET_CPU STREQUAL "aarch64")
+        # arm64
+        set(NCNN_PATH ${NCNN_PROJ}/build-aarch64/install/lib/cmake/ncnn)
+        set(OCV_PATH ${YOLO_PROJ}/opencv-4.5.4/aarch64-install)
+    else()
+        # x86
+        add_definitions(-DUSE_VULKAN_COMPUTE)
+        set(NCNN_PATH ${NCNN_PROJ}/build/install/lib/cmake/ncnn)
+    endif()
     # 指定include 和动态库路径
     # include_directories(${YOLO_PROJ}/include)
     # link_directories(${YOLO_PROJ}/lib)
-    set(OCV_PATH ${YOLO_PROJ}/opencv-4.5.4/aarch64-install)
+
 elseif(${HOST} STREQUAL "xmk")
     set(NCNN_PROJ /Users/xmk/git/IoT/ncnn)
     set(CMAKE_INSTALL_PREFIX /Users/xmk/git/IoT/go/vision)
@@ -43,16 +49,22 @@ endif()
 find_package(ncnn REQUIRED 
             PATHS ${NCNN_PATH}
             NO_DEFAULT_PATH)
-find_package(OpenCV REQUIRED 
-            PATHS ${OCV_PATH}
-            NO_DEFAULT_PATH)
-# find_package(OpenCV REQUIRED)
 
+if(TARGET_CPU STREQUAL "aarch64")
+    # arm64
+    find_package(OpenCV REQUIRED 
+                PATHS ${OCV_PATH}
+                NO_DEFAULT_PATH)
+else()
+    # x86
+    find_package(OpenCV REQUIRED)
+endif()
+
+message("TARGET_CPU" ${TARGET_CPU})
 message("OpenCV" ${OpenCV_LIBS})
 
 add_executable(ncnnv5lite v5lite-s.cpp)
 target_link_libraries(ncnnv5lite ncnn ${OpenCV_LIBS})
-
 
 add_library(v5lite SHARED v5lite-s.cpp)
 target_link_libraries(v5lite ncnn ${OpenCV_LIBS})
@@ -63,10 +75,20 @@ target_link_libraries(v5lite ncnn ${OpenCV_LIBS})
 add_library(v5litecgo SHARED v5lite-cgo.cpp v5lite-s.cpp)
 target_link_libraries(v5litecgo ncnn ${OpenCV_LIBS})
 
+if(TARGET_CPU STREQUAL "aarch64")
+    # arm64
+    install(TARGETS v5litecgo
+           LIBRARY DESTINATION lib/aarch64
+    )
+    set(INSTALL_HEAD_FILES v5lite-cgo.h)
+    install(FILES ${INSTALL_HEAD_FILES} DESTINATION  ${CMAKE_INSTALL_PREFIX}/src)
+else()
+    # x86
+    install(TARGETS v5litecgo
+           LIBRARY DESTINATION lib/${HOST}
+    )
+    set(INSTALL_HEAD_FILES v5lite-cgo.h)
+    install(FILES ${INSTALL_HEAD_FILES} DESTINATION  ${CMAKE_INSTALL_PREFIX}/src)
+endif()
 
-# target_link_libraries(ncnnv5lite ${libncnn.a} ${OpenCV_LIBS})
-# install(TARGETS v5litecgo
-#         LIBRARY DESTINATION lib/${HOST}
-# )
-set(INSTALL_HEAD_FILES v5lite-cgo.h)
-# install(FILES ${INSTALL_HEAD_FILES} DESTINATION  ${CMAKE_INSTALL_PREFIX}/src)
+
