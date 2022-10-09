@@ -80,14 +80,14 @@ if(TARGET_CPU STREQUAL "aarch64")
            LIBRARY DESTINATION lib/aarch64
     )
     set(INSTALL_HEAD_FILES v5lite-cgo.h)
-    install(FILES ${INSTALL_HEAD_FILES} DESTINATION  ${CMAKE_INSTALL_PREFIX}/src)
+    install(FILES ${INSTALL_HEAD_FILES} DESTINATION  ${CMAKE_INSTALL_PREFIX}/src/ncnn/include)
 else()
     # x86
     install(TARGETS v5litecgo
            LIBRARY DESTINATION lib/${HOST}
     )
     set(INSTALL_HEAD_FILES v5lite-cgo.h)
-    install(FILES ${INSTALL_HEAD_FILES} DESTINATION  ${CMAKE_INSTALL_PREFIX}/src)
+    install(FILES ${INSTALL_HEAD_FILES} DESTINATION  ${CMAKE_INSTALL_PREFIX}/src/ncnn/include)
 endif()
 
 
