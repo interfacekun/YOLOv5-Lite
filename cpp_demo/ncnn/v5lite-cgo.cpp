@@ -28,9 +28,9 @@ cnnex *newCnnex()
 
 int runDetect(cnnex *c, unsigned char *bytes, int width, int height, int size_of_buffer)
 {
-    printf(
-        "runDetect c->ex:%p c->data:%d bytes:%s width:%d height:%d\n",
-        c->yolov5, c->data, ((char *)bytes), width, height);
+    // printf(
+    //     "runDetect c->ex:%p c->data:%d bytes:%s width:%d height:%d\n",
+    //     c->yolov5, c->data, ((char *)bytes), width, height);
     try
     {
       
