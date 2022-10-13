@@ -5,3 +5,9 @@ runs
 utils/__pycache__
 utils/wandb_logging/__pycache__
 wandb
+
+Crayfish.v1i.yolov5pytorch
+Crayfish.v1i.yolov5pytorch.zip
+data/test
+data/train
+data/valid
