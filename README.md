@@ -161,7 +161,7 @@ $ python train.py --data coco.yaml --cfg v5lite-e.yaml --weights v5lite-e.pt --b
                                          v5lite-c.yaml           v5lite-c.pt               96
                                          v5lite-g.yaml           v5lite-g.pt               64
 
-python train.py --data crayfish.yaml --cfg v5lite-e.yaml --weights v5lite-e.pt --batch-size 32
+python train.py --data data/crayfish.yaml --cfg models/v5Lite-e.yaml --weights v5lite-e.pt --batch-size 32
 3b758c6717e93bc6ab56c1e2048dd77bff1b8c47
 ```
 

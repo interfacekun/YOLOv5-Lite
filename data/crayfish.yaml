@@ -13,9 +13,9 @@
 # val: /root/YOLOv5-Lite/data/coco/images/val2017  # 5000 images
 # test: /root/YOLOv5-Lite/data/coco/images/test2017  # 20288 of 40670 images, submit to https://competitions.codalab.org/competitions/20794
 
-train: D:\git\IoT\YOLOv5-Lite\data\train\images
-val: D:\git\IoT\YOLOv5-Lite\data\valid\images
-test: D:\git\IoT\YOLOv5-Lite\data\test\images
+train: ./data/train/images
+val: ./data/valid/images
+test: ./data/test/images
 
 # number of classes
 nc: 1
